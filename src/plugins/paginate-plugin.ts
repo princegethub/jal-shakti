@@ -1,4 +1,4 @@
-import { Schema, Model, FilterQuery } from 'mongoose';
+import { Schema, Model, FilterQuery, Document, Query } from 'mongoose';
 
 interface PaginateOptions {
   sortBy?: string;
@@ -15,11 +15,12 @@ interface QueryResult<T> {
   totalResults: number;
 }
 
-function paginate<T>(schema: Schema<T>): void {
+function paginate<T extends Document>(schema: Schema<T>): void {
   schema.statics.paginate = async function (
     filter: FilterQuery<T>,
     options: PaginateOptions = {},
   ): Promise<QueryResult<T>> {
+    // Sorting
     let sort = '';
     if (options.sortBy) {
       const sortingCriteria: string[] = [];
@@ -36,17 +37,15 @@ function paginate<T>(schema: Schema<T>): void {
     const page = options.page && options.page > 0 ? options.page : 1;
     const skip = (page - 1) * limit;
 
+    // Count documents
     const countPromise = (this as Model<T>).countDocuments(filter).exec();
-    let docsPromise = (this as Model<T>)
+
+    // Fetch documents
+    let docsPromise: Query<T[], T> = (this as Model<T>)
       .find(filter)
       .sort(sort)
       .skip(skip)
-      .limit(limit) as import('mongoose').Query<
-      import('mongoose').Document<T>[],
-      import('mongoose').Document<T>,
-      Record<string, unknown>,
-      T
-    >;
+      .limit(limit);
 
     if (options.populate) {
       options.populate.split(',').forEach((populateOption) => {
@@ -58,9 +57,11 @@ function paginate<T>(schema: Schema<T>): void {
       countPromise,
       docsPromise.exec(),
     ]);
+
     const totalPages = Math.ceil(totalResults / limit);
+
     return {
-      results: results.map((doc) => doc.toObject() as T),
+      results,
       page,
       limit,
       totalPages,

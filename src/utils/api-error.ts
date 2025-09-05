@@ -61,6 +61,7 @@ export const commonErrors = {
       StatusCodes.INTERNAL_SERVER_ERROR,
       cause,
     ),
+  
   userNotFound: (cause?: Error) =>
     new ApiError(
       CommonErrorCodes.USER_NOT_FOUND,
@@ -248,6 +249,13 @@ export const commonErrors = {
       CommonErrorCodes.INVALID_ACTION,
       'Invalid action',
       StatusCodes.BAD_REQUEST,
+      cause,
+    ),
+      configError: (cause?: Error) =>
+    new ApiError(
+      CommonErrorCodes.CONFIG_ERROR,
+      'Configuration error',
+      StatusCodes.INTERNAL_SERVER_ERROR,
       cause,
     ),
 };

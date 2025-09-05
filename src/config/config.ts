@@ -1,12 +1,10 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import Joi from 'joi';
-import { fileURLToPath } from 'url';
+import { commonErrors } from '@/utils/api-error';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.join(__dirname, '../../.env') });
+// Load environment variables from the root .env file
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 const envVarsSchema = Joi.object()
   .keys({
@@ -31,7 +29,7 @@ const { value: envVars, error } = envVarsSchema.validate(process.env, {
 });
 
 if (error) {
-  throw new Error(`Config validation error: ${error.message}`);
+  throw commonErrors.configError;
 }
 
 const defaultConfig = {
