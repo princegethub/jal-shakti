@@ -131,3 +131,8 @@ export enum StripeCodes {
   NO_PAYMENT_METHOD = 1507,
   PAYMENT_INTENT_ID_NOT_FOUND = 1508,
 }
+
+export enum metalsErrorsCodes {
+  INVALID_METAL = 1601,
+  UNSUPPORTED_METAL = 1602,
+}
