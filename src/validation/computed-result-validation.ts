@@ -1,3 +1,4 @@
+import { SAFETY_LEVEL } from '@/constants/enum';
 import Joi from 'joi';
 import { ObjectId } from 'mongodb';
 
@@ -15,6 +16,6 @@ export const computedResultValidation = Joi.object({
   hmpi: Joi.number(),
   ncpi: Joi.number(),
   criticalMetals: Joi.array().items(Joi.string()),
-  safetyLevel: Joi.string().valid('safe', 'moderate', 'high'),
+  safetyLevel: Joi.string().valid(...Object.values(SAFETY_LEVEL)),
   computedBy: Joi.string().allow(''),
 });

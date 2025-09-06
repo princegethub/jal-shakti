@@ -1,3 +1,4 @@
+import { LAB_NAME } from '@/constants/enum';
 import Joi from 'joi';
 import { ObjectId } from 'mongodb';
 
@@ -10,7 +11,7 @@ export const sampleValidation = Joi.object({
     if (!ObjectId.isValid(value)) return helpers.error('any.invalid');
     return value;
   }),
+  labName: Joi.string().valid(...Object.values(LAB_NAME)),
   sampleTime: Joi.date(),
-  labId: Joi.string().allow(''),
   concentrations: Joi.object(),
 });
