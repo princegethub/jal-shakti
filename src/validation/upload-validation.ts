@@ -1,3 +1,4 @@
+import { UPLOAD_STATUS } from '@/constants/enum';
 import Joi from 'joi';
 import { ObjectId } from 'mongodb';
 
@@ -11,7 +12,7 @@ export const uploadValidation = Joi.object({
   contentType: Joi.string().allow(''),
   rowCount: Joi.number(),
   status: Joi.string()
-    .valid('uploaded', 'processing', 'validated', 'rejected')
-    .default('uploaded'),
+    .valid(...Object.values(UPLOAD_STATUS))
+    .default(UPLOAD_STATUS.UPLOADED),
   meta: Joi.object(),
 });
