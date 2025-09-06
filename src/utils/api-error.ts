@@ -463,6 +463,13 @@ export const authErrors = {
       StatusCodes.UNAUTHORIZED,
       cause,
     ),
+  userAlreadyExists: (cause?: Error) =>
+    new ApiError(
+      AuthErrorCodes.USER_ALREADY_EXISTS,
+      'User already exists with this email',
+      StatusCodes.BAD_REQUEST,
+      cause,
+    ),
 };
 
 /**

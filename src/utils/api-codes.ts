@@ -20,6 +20,7 @@ export enum AuthErrorCodes {
   FAILED_MEETING_CREATION = 1236,
   MISSING_DATE = 1237,
   INVALID_DATE = 1238,
+  USER_ALREADY_EXISTS = 1239,
 }
 
 export enum ValidationErrorCodes {

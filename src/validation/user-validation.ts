@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { USER_ROLE } from '@/constants/enum';
 
 export const userValidation = Joi.object({
   name: Joi.string().trim().required(),
@@ -9,7 +10,8 @@ export const userValidation = Joi.object({
     .pattern(/\d/)
     .required(),
   role: Joi.string()
-    .valid('admin', 'scientist', 'researcher', 'user')
+    .valid(...Object.values(USER_ROLE)) // This will use the uppercase values from enum
+    .uppercase() // Convert input to uppercase
     .required(),
   isEmailVerified: Joi.boolean(),
 });
