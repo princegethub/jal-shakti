@@ -3,6 +3,7 @@ import {
   AuthErrorCodes,
   CommonErrorCodes,
   DatabaseErrorCodes,
+  metalsErrorsCodes,
   ValidationErrorCodes,
 } from './api-codes';
 
@@ -462,6 +463,13 @@ export const authErrors = {
       StatusCodes.UNAUTHORIZED,
       cause,
     ),
+  userAlreadyExists: (cause?: Error) =>
+    new ApiError(
+      AuthErrorCodes.USER_ALREADY_EXISTS,
+      'User already exists with this email',
+      StatusCodes.BAD_REQUEST,
+      cause,
+    ),
 };
 
 /**
@@ -554,6 +562,30 @@ export const databaseErrors = {
       DatabaseErrorCodes.DATABASE_URL_NOT_FOUND,
       'Database URL not found',
       StatusCodes.NOT_FOUND,
+      cause,
+    ),
+};
+
+export const metalsErrors = {
+  invalidMetal: (cause?: Error) =>
+    new ApiError(
+      metalsErrorsCodes.INVALID_METAL,
+      'Invalid metal type',
+      StatusCodes.BAD_REQUEST,
+      cause,
+    ),
+  unsupportedMetal: (cause?: Error) =>
+    new ApiError(
+      metalsErrorsCodes.UNSUPPORTED_METAL,
+      'Unsupported metal type',
+      StatusCodes.BAD_REQUEST,
+      cause,
+    ),
+  nonNegativeValue: (cause?: Error) =>
+    new ApiError(
+      metalsErrorsCodes.INVALID_METAL,
+      'Concentration values must be non-negative numbers',
+      StatusCodes.BAD_REQUEST,
       cause,
     ),
 };

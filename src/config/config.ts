@@ -21,6 +21,7 @@ const envVarsSchema = Joi.object()
     LOG_DIR: Joi.string().optional(),
     LOG_APP_NAME: Joi.string().default('jal-shakti'),
     APP_ENV: Joi.string().optional(),
+    DEFAULT_PASSWORD: Joi.string().optional(),
   })
   .unknown();
 
@@ -84,6 +85,7 @@ const config = {
     enableMongoDB:
       process.env.ENABLE_MONGODB?.toLowerCase() === 'true' || false,
   },
+  DEFAULT_USER_PASSWORD: envVars.DEFAULT_PASSWORD || 'jal-shakti@123',
   ...configs[env],
 };
 

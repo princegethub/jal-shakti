@@ -20,6 +20,7 @@ export enum AuthErrorCodes {
   FAILED_MEETING_CREATION = 1236,
   MISSING_DATE = 1237,
   INVALID_DATE = 1238,
+  USER_ALREADY_EXISTS = 1239,
 }
 
 export enum ValidationErrorCodes {
@@ -130,4 +131,9 @@ export enum StripeCodes {
   SUBSCRIPTION_ID_UNAVAILABLE = 1506,
   NO_PAYMENT_METHOD = 1507,
   PAYMENT_INTENT_ID_NOT_FOUND = 1508,
+}
+
+export enum metalsErrorsCodes {
+  INVALID_METAL = 1601,
+  UNSUPPORTED_METAL = 1602,
 }

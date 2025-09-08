@@ -1,0 +1,69 @@
+{
+  "info": {
+    "_postman_id": "unique-id",
+    "name": "Jal-Shakti",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\",\n    \"phone\": \"9876543210\",\n    \"role\": \"user\",\n    \"password\": \"jal-shakti@123\",\n    \"isEmailVerified\": false,\n    \"location\": \"Delhi\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/v1/auth/register",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "description": "Register a new user in the system"
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\",\n    \"phone\": \"9876543210\",\n    \"role\": \"user\",\n    \"password\": \"jal-shakti@123\",\n    \"isEmailVerified\": false,\n    \"location\": \"Delhi\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:3000/api/auth/register",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "3000",
+                  "path": ["api", "auth", "register"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"success\": true,\n    \"code\": 1001,\n    \"message\": \"User created successfully\",\n    \"data\": {\n        \"_id\": \"generated-id\",\n        \"name\": \"Test User\",\n        \"email\": \"test@example.com\",\n        \"phone\": \"9876543210\",\n        \"role\": \"user\",\n        \"isEmailVerified\": false,\n        \"location\": \"Delhi\",\n        \"createdAt\": \"2025-09-06T10:00:00.000Z\",\n        \"updatedAt\": \"2025-09-06T10:00:00.000Z\"\n    }\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
