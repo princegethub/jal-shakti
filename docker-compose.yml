@@ -1,7 +1,24 @@
 version: '3.8'
 services:
+  redis:
+    image: redis:alpine
+    container_name: jal-shakti-redis
+    command: redis-server --requirepass your_redis_password
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - webnet
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
   db:
     image: mongo:latest
+    container_name: jal-shakti-mongodb
     environment:
       - MONGO_INITDB_ROOT_USERNAME=prince
       - MONGO_INITDB_ROOT_PASSWORD=prince
@@ -13,9 +30,59 @@ services:
       - db_data:/data/db
     networks:
       - webnet
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jal-shakti-app
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MONGODB_URL=mongodb://prince:prince@db:27017/jal-shakti?authSource=admin
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=your_redis_password
+      - JWT_SECRET=your_jwt_secret
+      - JWT_ACCESS_EXPIRATION_MINUTES=30
+      - JWT_REFRESH_EXPIRATION_DAYS=30
+      - JWT_RESET_PASSWORD_EXPIRATION_MINUTES=10
+      - JWT_VERIFY_EMAIL_EXPIRATION_MINUTES=10
+    ports:
+      - '3000:3000'
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    networks:
+      - webnet
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'wget',
+          '--no-verbose',
+          '--tries=1',
+          '--spider',
+          'http://localhost:3000/health',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 networks:
   webnet:
     driver: bridge
+
 volumes:
   db_data:
+    driver: local
+  redis_data:
+    driver: local

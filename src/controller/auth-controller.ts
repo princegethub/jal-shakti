@@ -2,10 +2,14 @@ import config from '@/config/config';
 import { tryCatchHandler } from '@/utils/try-catch-handler';
 import { Request, Response, NextFunction } from 'express';
 
-import ApiError, { authErrors, commonErrors } from '@/utils/api-error';
+import ApiError, {
+  authErrors,
+  commonErrors,
+} from '@/utils/api-error';
 import { createUser, getUser } from '@/servies/user-services';
 import { successMessages } from '@/utils/api-success';
 import { generateJwtToken } from '@/utils/jwt';
+
 
 export const registerUser = tryCatchHandler(
   async (req: Request, res: Response, _: NextFunction) => {
@@ -103,3 +107,31 @@ export const login = tryCatchHandler(async (req: Request, res: Response) => {
     .userLoggedIn({ user, accessToken, refreshToken })
     .sendResponse(res);
 });
+
+
+///  TODO: refresh token LOGIN_SUCCESS
+// export const refreshToken = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction,
+// ): Promise<void> => {
+//   try {
+//     const { refreshToken } = req.body;
+
+//     if (!refreshToken) {
+//       throw middlewareErrors.missingToken();
+//     }
+
+//     const decoded = jwt.verify(refreshToken, config.jwt.JWT_SECRET) as {
+//       id: string;
+//       role: USER_ROLE;
+//       email: string;
+//     };
+//     const newAccessToken = generateJwtToken(
+//       decoded,
+//       config.jwt.JWT_SECRET,      config.jwt.JWT_REFRESH_EXPIRATION_DAYS,
+//     );
+//   } catch (error) {
+//     next(error);
+//   }
+// };
