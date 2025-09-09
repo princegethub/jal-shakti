@@ -30,7 +30,7 @@ const { value: envVars, error } = envVarsSchema.validate(process.env, {
 });
 
 if (error) {
-  throw commonErrors.configError;
+  throw commonErrors.configError(error);
 }
 
 const defaultConfig = {
