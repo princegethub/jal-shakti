@@ -1,11 +1,10 @@
-import { logger } from '@/logger/logger';
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import ApiError from './api-error';
 import process from 'process';
 
 export function errorHandler(
-  err: Error,
+  err: Error | ApiError,
   req: Request,
   res: Response,
   _: NextFunction,
@@ -19,13 +18,22 @@ export function errorHandler(
     httpStatusCode = err.status;
   }
 
-  logger.error(err.message, { error: err });
+  // In development, also log to console for easier debugging
+  if (process.env.NODE_ENV === 'development') {
+    console.error('\n🚨 Error Details:');
+    console.error('Path:', req.path);
+    console.error('Error Type:', err.constructor.name);
+    console.error('Message:', err.message);
+    console.error('Stack:', err.stack);
+  }
 
   res.status(httpStatusCode).json({
     success: false,
     code: statusCode,
     message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    ...(process.env.NODE_ENV === 'development' && {
+      stack: err.stack,
+    }),
   });
 }
 

@@ -572,6 +572,28 @@ export const databaseErrors = {
       StatusCodes.NOT_FOUND,
       cause,
     ),
+  // MongoDB specific errors
+  duplicateKey: (field: string, value: string, cause?: Error) =>
+    new ApiError(
+      DatabaseErrorCodes.MONGO_DUPLICATE_KEY,
+      `Duplicate entry for ${field}: ${value}`,
+      StatusCodes.CONFLICT,
+      cause,
+    ),
+  validationError: (message: string, cause?: Error) =>
+    new ApiError(
+      DatabaseErrorCodes.MONGO_VALIDATION_ERROR,
+      message || 'Validation failed',
+      StatusCodes.BAD_REQUEST,
+      cause,
+    ),
+  castError: (field: string, value: string, cause?: Error) =>
+    new ApiError(
+      DatabaseErrorCodes.MONGO_CASTING_ERROR,
+      `Invalid value '${value}' for field '${field}'`,
+      StatusCodes.BAD_REQUEST,
+      cause,
+    ),
 };
 
 export const metalsErrors = {
