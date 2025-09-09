@@ -20,9 +20,9 @@ services:
     image: mongo:latest
     container_name: jal-shakti-mongodb
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=prince
-      - MONGO_INITDB_ROOT_PASSWORD=prince
-      - MONGO_INITDB_DATABASE=jal-shakti
+      MONGO_INITDB_ROOT_USERNAME: prince
+      MONGO_INITDB_ROOT_PASSWORD: prince
+      MONGO_INITDB_DATABASE: jal-shakti
     restart: unless-stopped
     ports:
       - '27017:27017'
@@ -85,4 +85,5 @@ volumes:
   db_data:
     driver: local
   redis_data:
+  app_logs:
     driver: local

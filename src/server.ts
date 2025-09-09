@@ -1,3 +1,4 @@
+import 'module-alias/register';
 import mongoose from 'mongoose';
 import app from './app.js';
 import config from '@/config/config.js';
