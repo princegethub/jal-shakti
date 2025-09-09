@@ -1,0 +1,57 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Dependencies
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Build output
+dist
+build
+*.tsbuildinfo
+
+# Development
+.vscode
+.idea
+*.sublime-*
+.env.local
+.env.*.local
+
+# Testing
+coverage
+*.test.ts
+*.spec.ts
+__tests__
+test
+tests
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Operating System
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker
+docker-compose*.yml
+
+# Documentation
+README.md
+CHANGELOG.md
+docs/
+*.md
+
+# Temporary files
+*.swp
+*.swo
+.tmp
+.temp

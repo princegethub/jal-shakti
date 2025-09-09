@@ -29,7 +29,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api/v1', router);
+app.use('/api/', router);
 
 // Route handler with explicit types for req and res
 app.get('/health', (req: Request, res: Response): void => {
