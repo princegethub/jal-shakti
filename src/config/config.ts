@@ -22,6 +22,11 @@ const envVarsSchema = Joi.object()
     LOG_APP_NAME: Joi.string().default('jal-shakti'),
     APP_ENV: Joi.string().optional(),
     DEFAULT_PASSWORD: Joi.string().optional(),
+    REDIS_PASSWORD: Joi.string().allow('').optional(),
+    REDIS_TOKEN_EXPIRY: Joi.number().default(86400), // 24 hours in seconds
+    REDIS_URL: Joi.string().optional().default('redis://localhost:6379'),
+    REDIS_HOST: Joi.string().default('localhost'),
+    REDIS_PORT: Joi.number().default(6379),
   })
   .unknown();
 
@@ -30,7 +35,7 @@ const { value: envVars, error } = envVarsSchema.validate(process.env, {
 });
 
 if (error) {
-  throw commonErrors.configError;
+  throw commonErrors.configError(error);
 }
 
 const defaultConfig = {
@@ -85,6 +90,13 @@ const config = {
     enableFile: true,
     enableMongoDB:
       process.env.ENABLE_MONGODB?.toLowerCase() === 'true' || false,
+  },
+  redis: {
+    url: envVars.REDIS_URL,
+    password: envVars.REDIS_PASSWORD || undefined,
+    tokenExpiry: envVars.REDIS_TOKEN_EXPIRY,
+    host: envVars.REDIS_HOST,
+    port: envVars.REDIS_PORT,
   },
   DEFAULT_USER_PASSWORD: envVars.DEFAULT_PASSWORD || 'jal-shakti@123',
   ...configs[env],

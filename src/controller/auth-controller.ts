@@ -103,3 +103,30 @@ export const login = tryCatchHandler(async (req: Request, res: Response) => {
     .userLoggedIn({ user, accessToken, refreshToken })
     .sendResponse(res);
 });
+
+///  TODO: refresh token LOGIN_SUCCESS
+// export const refreshToken = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction,
+// ): Promise<void> => {
+//   try {
+//     const { refreshToken } = req.body;
+
+//     if (!refreshToken) {
+//       throw middlewareErrors.missingToken();
+//     }
+
+//     const decoded = jwt.verify(refreshToken, config.jwt.JWT_SECRET) as {
+//       id: string;
+//       role: USER_ROLE;
+//       email: string;
+//     };
+//     const newAccessToken = generateJwtToken(
+//       decoded,
+//       config.jwt.JWT_SECRET,      config.jwt.JWT_REFRESH_EXPIRATION_DAYS,
+//     );
+//   } catch (error) {
+//     next(error);
+//   }
+// };

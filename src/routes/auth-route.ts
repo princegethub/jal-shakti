@@ -1,4 +1,8 @@
-import { login, registerUser } from '@/controller/auth-controller';
+import {
+  login,
+  refreshToken,
+  registerUser,
+} from '@/controller/auth-controller';
 import express from 'express';
 import { loginUserSchema, validate } from '@/middlewares/validate-middleware';
 import { registerUserSchema } from '@/schema/user-schema';
@@ -10,5 +14,6 @@ const authRoutes = express.Router();
 
 authRoutes.post('/register', validate(registerUserSchema), registerUser);
 authRoutes.post('/login', validate(loginUserSchema), login);
+authRoutes.post('/refresh-token', refreshToken); // Reusing login controller for token refresh
 
 export default authRoutes;
