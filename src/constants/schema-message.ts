@@ -7,20 +7,24 @@ export const validationMessages = {
     'any.required': 'Name is required',
   },
   email: {
-    'string.empty': 'Email is required',
+    'string.base': 'Email should be a text value',
+    'string.empty': 'Email cannot be empty',
     'string.email': 'Please provide a valid email address',
     'any.required': 'Email is required',
   },
   phone: {
     'string.pattern.base': 'Please provide a valid phone number',
+    'any.invalid':
+      'Phone number must be a valid 10 digit number (with or without +91).',
   },
   role: {
     'any.only': `Role must be one of: ${Object.values(USER_ROLE).join(', ')}`,
     'any.required': 'Role is required',
   },
   password: {
-    'string.empty': 'Password is required',
-    'string.min': 'Password must be at least 8 characters long',
+    'string.base': 'Password should be a text value',
+    'string.empty': 'Password cannot be empty',
+    'string.min': 'Password should be at least {#limit} characters long',
     'string.pattern.base': 'Password must contain both letters and numbers',
     'any.required': 'Password is required',
   },

@@ -86,6 +86,7 @@ export enum CommonErrorCodes {
   SESSION_NOTE_NOT_FOUND = 1040,
   INVALID_REQUEST = 1041,
   CONFIG_ERROR = 1042,
+  REQUEST_BODY_EMPTY = 1043,
 }
 
 export enum SuccessCodes {

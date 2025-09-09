@@ -305,6 +305,8 @@ class ProductionLogger {
           return green(lvl.toUpperCase());
         case 'DEBUG':
           return magenta(lvl.toUpperCase());
+        case 'TIMESTAMP':
+          return gray(lvl.toUpperCase());
         default:
           return cyan(lvl.toUpperCase());
       }
@@ -315,7 +317,7 @@ class ProductionLogger {
 
     // Simpler output in development
     if (this.config.environment === 'development') {
-      let output = `${colorizeLevel(level)} ${message}`;
+      let output = `${colorizeLevel(timestamp as string)} [${colorizeLevel(level)}]: ${message}`;
       if (stack) {
         output += `\n${red('STACK:')} ${stack}`;
       }
