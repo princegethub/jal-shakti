@@ -44,6 +44,16 @@ export enum DatabaseErrorCodes {
   NO_SLOTS_CREATED = 2004,
   SLOT_NOT_FOUND = 2005,
   DATABASE_URL_NOT_FOUND = 2006,
+
+  // MongoDB specific error codes
+  MONGO_DUPLICATE_KEY = 2100, // E11000 duplicate key error
+  MONGO_VALIDATION_ERROR = 2101, // Schema validation error
+  MONGO_CASTING_ERROR = 2102, // Type casting error
+  MONGO_DOCUMENT_NOT_FOUND = 2103, // Document not found
+  MONGO_CONNECTION_ERROR = 2104, // Connection issues
+  MONGO_TIMEOUT_ERROR = 2105, // Operation timeout
+  MONGO_INDEX_ERROR = 2106, // Index related errors
+  MONGO_BULK_WRITE_ERROR = 2107, // Bulk write operation errors
 }
 
 export enum CommonErrorCodes {

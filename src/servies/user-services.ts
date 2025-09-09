@@ -1,11 +1,5 @@
 import User from '@/models/user-model';
-
-export const getUser = async (where: { email?: string; phone?: string }) => {
-  return User.findOne({
-    ...where,
-    isDeleted: false,
-  });
-};
+import { withMongoErrorHandler } from '@/utils/mongo-error-handler';
 
 export interface CreateUserInput {
   name: string;
@@ -17,8 +11,19 @@ export interface CreateUserInput {
   location?: string;
 }
 
+export const getUser = async (where: { email?: string; phone?: string }) => {
+  return withMongoErrorHandler(async () => {
+    return User.findOne({
+      ...where,
+      isDeleted: false,
+    });
+  });
+};
+
 export const createUser = async (userData: CreateUserInput) => {
-  const user = new User(userData);
-  await user.save();
-  return user;
+  return withMongoErrorHandler(async () => {
+    const user = new User(userData);
+    await user.save();
+    return user;
+  });
 };
