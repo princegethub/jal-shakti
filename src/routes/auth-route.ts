@@ -1,6 +1,6 @@
-import { registerUser } from '@/controller/auth-controller';
+import { login, registerUser } from '@/controller/auth-controller';
 import express from 'express';
-import { validate } from '@/middlewares/validate-middleware';
+import { loginUserSchema, validate } from '@/middlewares/validate-middleware';
 import { registerUserSchema } from '@/schema/user-schema';
 
 /**
@@ -9,6 +9,7 @@ import { registerUserSchema } from '@/schema/user-schema';
 const authRoutes = express.Router();
 
 authRoutes.post('/register', validate(registerUserSchema), registerUser);
+authRoutes.post('/login', validate(loginUserSchema), login);
 
 // // Debug middleware
 // authRoutes.use((req, res, next) => {

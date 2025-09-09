@@ -47,3 +47,27 @@ export const validate = (schema: Joi.ObjectSchema) =>
     }
     next();
   });
+
+import { validationMessages } from '@/constants/schema-message';
+
+export const loginUserSchema = Joi.object({
+  email: Joi.string().email().optional().messages(validationMessages.email),
+  phone: Joi.string()
+    .custom((value, helpers) => {
+      // Remove +91 if present
+      if (value.startsWith('+91')) {
+        value = value.slice(3);
+      }
+      // Check if remaining is exactly 10 digits
+      if (!/^[0-9]{10}$/.test(value)) {
+        return helpers.error('any.invalid');
+      }
+      return value;
+    })
+    .optional()
+    .messages(validationMessages.phone),
+  password: Joi.string()
+    .min(6)
+    .required()
+    .messages(validationMessages.password),
+});

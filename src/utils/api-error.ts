@@ -259,6 +259,14 @@ export const commonErrors = {
       StatusCodes.INTERNAL_SERVER_ERROR,
       cause,
     ),
+
+  requestBodyEmpty: (cause?: Error) =>
+    new ApiError(
+      CommonErrorCodes.REQUEST_BODY_EMPTY,
+      'Request body is empty',
+      StatusCodes.BAD_REQUEST,
+      cause,
+    ),
 };
 
 /**

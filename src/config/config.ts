@@ -67,12 +67,13 @@ const config = {
     url: envVars.MONGODB_URL,
   },
   jwt: {
-    secret: envVars.JWT_SECRET,
-    accessExpirationMinutes: envVars.JWT_ACCESS_EXPIRATION_MINUTES,
-    refreshExpirationDays: envVars.JWT_REFRESH_EXPIRATION_DAYS,
-    resetPasswordExpirationMinutes:
+    JWT_SECRET: envVars.JWT_SECRET,
+    JWT_ACCESS_EXPIRATION_MINUTES: envVars.JWT_ACCESS_EXPIRATION_MINUTES,
+    JWT_REFRESH_EXPIRATION_DAYS: envVars.JWT_REFRESH_EXPIRATION_DAYS,
+    JWT_RESET_PASSWORD_EXPIRATION_MINUTES:
       envVars.JWT_RESET_PASSWORD_EXPIRATION_MINUTES,
-    verifyEmailExpirationMinutes: envVars.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES,
+    JWT_VERIFY_EMAIL_EXPIRATION_MINUTES:
+      envVars.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES,
   },
   logger: {
     appName: defaultConfig.LOG_APP_NAME || 'jal-shakti',

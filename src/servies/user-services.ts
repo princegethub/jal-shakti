@@ -1,9 +1,8 @@
 import User from '@/models/user-model';
 
-export const findUserByEmail = async (email: string, phone: string) => {
+export const getUser = async (where: { email?: string; phone?: string }) => {
   return User.findOne({
-    email,
-    phone,
+    ...where,
     isDeleted: false,
   });
 };
