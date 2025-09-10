@@ -34,4 +34,8 @@ export const validationMessages = {
   location: {
     'string.base': 'Location must be a string',
   },
+  refreshToken: {
+    'string.empty': 'Refresh token is required',
+    'any.required': 'Refresh token is required',
+  },
 };

@@ -2,18 +2,24 @@ import {
   login,
   refreshToken,
   registerUser,
+  logout,
 } from '@/controller/auth-controller';
 import express from 'express';
 import { loginUserSchema, validate } from '@/middlewares/validate-middleware';
-import { registerUserSchema } from '@/schema/user-schema';
+import {
+  logoutSchema,
+  refreshTokenSchema,
+  registerUserSchema,
+} from '@/schema/user-schema';
 
 /**
- * Creates an instance of an Express router to handle admin-related routes.
+ * Creates an instance of an Express router to handle authentication routes.
  */
 const authRoutes = express.Router();
 
 authRoutes.post('/register', validate(registerUserSchema), registerUser);
 authRoutes.post('/login', validate(loginUserSchema), login);
-authRoutes.post('/refresh-token', refreshToken); // Reusing login controller for token refresh
+authRoutes.post('/refresh-token', validate(refreshTokenSchema), refreshToken);
+authRoutes.post('/logout', validate(logoutSchema), logout);
 
 export default authRoutes;

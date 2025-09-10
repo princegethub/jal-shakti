@@ -503,6 +503,8 @@ export const authErrors = {
 export const middlewareErrors = {
   invalidToken: (cause?: Error) =>
     new ApiError(1501, 'Invalid token', StatusCodes.UNAUTHORIZED, cause),
+  expiredToken: (cause?: Error) =>
+    new ApiError(1502, 'Expired token', StatusCodes.UNAUTHORIZED, cause),
   missingToken: (cause?: Error) =>
     new ApiError(1502, 'Missing token', StatusCodes.UNAUTHORIZED, cause),
   invalidSignature: (cause?: Error) =>

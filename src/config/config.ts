@@ -18,6 +18,9 @@ const envVarsSchema = Joi.object()
     JWT_REFRESH_EXPIRATION_DAYS: Joi.number().default(30),
     JWT_RESET_PASSWORD_EXPIRATION_MINUTES: Joi.number().default(10),
     JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: Joi.number().default(10),
+    JWT_REFRESH_SECRET: Joi.string()
+      .required()
+      .description('JWT refresh secret key'),
     LOG_DIR: Joi.string().optional(),
     LOG_APP_NAME: Joi.string().default('jal-shakti'),
     APP_ENV: Joi.string().optional(),
@@ -27,6 +30,9 @@ const envVarsSchema = Joi.object()
     REDIS_URL: Joi.string().optional().default('redis://localhost:6379'),
     REDIS_HOST: Joi.string().default('localhost'),
     REDIS_PORT: Joi.number().default(6379),
+    REDIS_DB: Joi.number().default(0),
+    REDIS_USERNAME: Joi.string().optional(),
+    REDIS_KEY_PREFIX: Joi.string().optional(),
   })
   .unknown();
 
@@ -79,6 +85,7 @@ const config = {
       envVars.JWT_RESET_PASSWORD_EXPIRATION_MINUTES,
     JWT_VERIFY_EMAIL_EXPIRATION_MINUTES:
       envVars.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES,
+    JWT_REFRESH_SECRET: envVars.JWT_REFRESH_SECRET,
   },
   logger: {
     appName: defaultConfig.LOG_APP_NAME || 'jal-shakti',
@@ -97,6 +104,9 @@ const config = {
     tokenExpiry: envVars.REDIS_TOKEN_EXPIRY,
     host: envVars.REDIS_HOST,
     port: envVars.REDIS_PORT,
+    db: envVars.REDIS_DB,
+    username: envVars.REDIS_USERNAME || undefined,
+    keyPrefix: process.env.REDIS_KEY_PREFIX || 'jal-shakti:',
   },
   DEFAULT_USER_PASSWORD: envVars.DEFAULT_PASSWORD || 'jal-shakti@123',
   ...configs[env],

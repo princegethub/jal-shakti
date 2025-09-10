@@ -31,3 +31,15 @@ export const registerUserSchema = Joi.object({
 }).messages({
   'object.unknown': 'Invalid field: {#key}',
 });
+
+export const refreshTokenSchema = Joi.object({
+  refreshToken: Joi.string()
+    .required()
+    .messages(validationMessages.refreshToken),
+});
+
+export const logoutSchema = Joi.object({
+  refreshToken: Joi.string()
+    .required()
+    .messages(validationMessages.refreshToken),
+});

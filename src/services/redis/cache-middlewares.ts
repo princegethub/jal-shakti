@@ -33,11 +33,10 @@ export const defaultCacheOptions: CacheOptions = {
 export const cacheMiddleware =
   (type: SupportedTypeEnum, options: CacheOptions = defaultCacheOptions) =>
   async (req: Request, res: Response, next: NextFunction) => {
-    const store: StoreTypeEnum = StoreType.CACHE;
     const cacheKey = options.key(req);
 
     try {
-      const cachedData = await client.get(type, cacheKey, store);
+      const cachedData = await client.get(type, cacheKey);
 
       if (cachedData) {
         logger.info(`Cache HIT: ${cacheKey}`);
@@ -50,7 +49,7 @@ export const cacheMiddleware =
       const originalJson = res.json.bind(res);
       res.json = (body: unknown) => {
         if (res.statusCode === StatusCodes.OK) {
-          client.set(type, cacheKey, body, options.ttl, store);
+          client.set(type, cacheKey, body, options.ttl);
         }
         return originalJson(body);
       };
@@ -77,12 +76,12 @@ export const cacheInvalidate =
         res.statusCode < StatusCodes.MULTIPLE_CHOICES
       ) {
         keys.forEach((key) => {
-          client.delete(key, store).catch((err) => {
+          client.delete(key).catch((err) => {
             logger.error(`Cache invalidate failed for key: ${key}`, err);
           });
         });
       }
-      return originalEnd(chunkOrCb, encodingOrCb, cb);
+      return originalEnd(chunkOrCb, encodingOrCb as 'utf-8', cb as () => void);
     };
 
     next();
