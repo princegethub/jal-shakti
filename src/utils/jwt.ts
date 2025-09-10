@@ -1,50 +1,172 @@
 import { USER_ROLE } from '@/constants/enum';
 import jwt from 'jsonwebtoken';
+import config from '@/config/config';
+import { client } from '@/services/redis';
+import { middlewareErrors } from './api-error';
+import { SupportedType } from '@/types';
+
+// Define token types
+export interface TokenPayload {
+  id: string;
+  role: USER_ROLE;
+  email?: string;
+  exp?: number;
+  iat?: number;
+  jti?: string; // JWT ID for token tracking
+}
+
+export interface TokenResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}
+
+// Constants
+const TOKEN_PREFIX = {
+  ACCESS: 'access:',
+  REFRESH: 'refresh:',
+  BLACKLIST: 'blacklist:',
+} as const;
 
 /**
- * Compares a plaintext password with a hashed password to determine if they match.
- *
- * @param password - The plaintext password to compare.
- * @param hash - The hashed password to compare against.
- * @returns A promise that resolves to `true` if the passwords match, otherwise `false`.
- */
-// export async function comparePassword(
-//     password: string,
-//     hash: string,
-// ): Promise<boolean> {
-//     return await bcrypt.compare(password, hash);
-// }
-
-/**
- * Generates a JSON Web Token (JWT) for the given user ID and email.
- *
- * @param id - The unique identifier of the user.
- * @param email - The email address of the user.
- * @param secret - The secret key.
- * @param expiresIn - The expiration time.
- * @returns A signed JWT containing the user's ID and email.
- *
- * @throws An error if the secret or expiration time is not defined.
+ * Generate a JWT token
+ * @param payload - Data to be encoded in the token
+ * @param secret - Secret key for signing the token
+ * @param expiresIn - Token expiration time in minutes/days
+ * @returns Promise<string> - Generated token
  */
 export function generateJwtToken(
-  payload: { id: string; role: USER_ROLE; email: string },
+  payload: TokenPayload,
   secret: string,
   expiresIn: number,
 ): string {
-  return jwt.sign(payload, secret as jwt.Secret, {
-    expiresIn: expiresIn,
+  const jti = generateTokenId();
+  return jwt.sign({ ...payload, jti }, secret, {
+    expiresIn: expiresIn < 24 * 60 ? `${expiresIn}m` : `${expiresIn}d`,
+    algorithm: 'HS512',
+    issuer: 'jal-shakti-api',
+    audience: 'jal-shakti-client',
   });
 }
 
 /**
- * Verifies a JWT and returns the decoded payload.
- *
- * @param token - The JWT to verify.
- * @param secret - The secret key.
- * @returns The decoded payload of the JWT.
- *
- * @throws An error if the token is invalid or expired.
+ * Verify and decode a JWT token
+ * @param token - Token to verify
+ * @param secret - Secret key used to sign the token
+ * @returns Promise<TokenPayload>
  */
-export function verifyJwtToken(token: string, secret: string): jwt.JwtPayload {
-  return jwt.verify(token, secret) as jwt.JwtPayload;
+export async function verifyJwtToken(
+  token: string,
+  secret: string,
+): Promise<TokenPayload> {
+  try {
+    const decoded = jwt.verify(token, secret, {
+      issuer: 'jal-shakti-api',
+      audience: 'jal-shakti-client',
+      algorithms: ['HS512'],
+    }) as TokenPayload;
+
+    // Check if token is blacklisted
+    if (decoded.jti) {
+      const isBlacklisted = await isTokenBlacklisted(decoded.jti);
+      if (isBlacklisted) {
+        throw middlewareErrors.invalidToken();
+      }
+    }
+
+    return decoded;
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      throw middlewareErrors.expiredToken();
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      throw middlewareErrors.invalidToken();
+    }
+    throw error;
+  }
 }
+
+/**
+ * Store refresh token in Redis
+ */
+export const storeRefreshToken = async (
+  userId: string,
+  token: string,
+): Promise<void> => {
+  const key = `${TOKEN_PREFIX.REFRESH}${userId}`;
+
+  await client.set(
+    SupportedType.STRING,
+    key,
+    token,
+    config.jwt.JWT_REFRESH_EXPIRATION_DAYS * 24 * 60 * 60,
+  );
+};
+
+/**
+ * Validate stored refresh token
+ */
+export const validateStoredRefreshToken = async (
+  userId: string,
+  token: string,
+): Promise<boolean> => {
+  const storedToken = await client.get(
+    SupportedType.STRING,
+    `${TOKEN_PREFIX.REFRESH}${userId}`,
+  );
+  return storedToken === token;
+};
+
+/**
+ * Blacklist a token
+ */
+export const blacklistToken = async (
+  jti: string,
+  expiresIn: number,
+): Promise<void> => {
+  const key = `${TOKEN_PREFIX.BLACKLIST}${jti}`;
+  await client.set(SupportedType.STRING, key, '1', expiresIn);
+};
+
+/**
+ * Check if token is blacklisted
+ */
+export const isTokenBlacklisted = async (jti: string): Promise<boolean> => {
+  const exists = await client.get(
+    SupportedType.STRING,
+    `${TOKEN_PREFIX.BLACKLIST}${jti}`,
+  );
+  return Boolean(exists);
+};
+
+/**
+ * Generate a unique token ID
+ */
+export const generateTokenId = (): string => {
+  return Math.random().toString(36).substr(2, 9);
+};
+
+/**
+ * Extract token from authorization header
+ */
+export const extractTokenFromHeader = (authHeader?: string): string => {
+  if (!authHeader) {
+    throw middlewareErrors.missingToken();
+  }
+
+  const [type, token] = authHeader.split(' ');
+
+  if (type !== 'Bearer' || !token) {
+    throw middlewareErrors.invalidToken();
+  }
+
+  return token;
+};
+
+/**
+ * Delete refresh token from Redis
+ */
+export const deleteRefreshToken = async (userId: string): Promise<void> => {
+  const key = `${TOKEN_PREFIX.REFRESH}${userId}`;
+  await client.delete(key);
+};

@@ -2,10 +2,23 @@ import config from '@/config/config';
 import { tryCatchHandler } from '@/utils/try-catch-handler';
 import { Request, Response, NextFunction } from 'express';
 
-import ApiError, { authErrors, commonErrors } from '@/utils/api-error';
+import ApiError, {
+  authErrors,
+  commonErrors,
+  middlewareErrors,
+} from '@/utils/api-error';
 import { createUser, getUser } from '@/servies/user-services';
 import { successMessages } from '@/utils/api-success';
-import { generateJwtToken } from '@/utils/jwt';
+import {
+  generateJwtToken,
+  verifyJwtToken,
+  validateStoredRefreshToken,
+  blacklistToken,
+  storeRefreshToken,
+  extractTokenFromHeader,
+} from '@/utils/jwt';
+import jwt from 'jsonwebtoken';
+import logger from '@/logger/logger';
 
 export const registerUser = tryCatchHandler(
   async (req: Request, res: Response, _: NextFunction) => {
@@ -39,6 +52,12 @@ export const registerUser = tryCatchHandler(
         location,
       });
 
+      logger.info('New user registered', {
+        userId: user.id,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+      });
       // Send success response
       return successMessages.userCreated(user).sendResponse(res);
     } catch (error) {
@@ -88,45 +107,133 @@ export const login = tryCatchHandler(async (req: Request, res: Response) => {
 
   // Generate tokens
   const payload = { id: user.id, role: user.role, email: user.email };
-  const accessToken = generateJwtToken(
-    payload,
-    config.jwt.JWT_SECRET,
-    config.jwt.JWT_REFRESH_EXPIRATION_DAYS,
-  );
-  const refreshToken = generateJwtToken(
-    payload,
-    config.jwt.JWT_SECRET,
-    config.jwt.JWT_REFRESH_EXPIRATION_DAYS,
-  );
+  const [accessToken, refreshToken] = await Promise.all([
+    generateJwtToken(
+      payload,
+      config.jwt.JWT_SECRET,
+      config.jwt.JWT_ACCESS_EXPIRATION_MINUTES,
+    ),
+    generateJwtToken(
+      payload,
+      config.jwt.JWT_REFRESH_SECRET,
+      config.jwt.JWT_REFRESH_EXPIRATION_DAYS,
+    ),
+  ]);
+
+  // Store refresh token in Redis
+  await storeRefreshToken(user.id, refreshToken);
+
   // Send success response with tokens
   return successMessages
-    .userLoggedIn({ user, accessToken, refreshToken })
+    .userLoggedIn({
+      user,
+      accessToken,
+      refreshToken,
+      expiresIn: config.jwt.JWT_ACCESS_EXPIRATION_MINUTES * 60,
+    })
     .sendResponse(res);
 });
 
-///  TODO: refresh token LOGIN_SUCCESS
-// export const refreshToken = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction,
-// ): Promise<void> => {
-//   try {
-//     const { refreshToken } = req.body;
+export const logout = tryCatchHandler(async (req: Request, res: Response) => {
+  if (!req.body) commonErrors.requestBodyEmpty();
 
-//     if (!refreshToken) {
-//       throw middlewareErrors.missingToken();
-//     }
+  const accessToken = extractTokenFromHeader(req.headers.authorization);
 
-//     const decoded = jwt.verify(refreshToken, config.jwt.JWT_SECRET) as {
-//       id: string;
-//       role: USER_ROLE;
-//       email: string;
-//     };
-//     const newAccessToken = generateJwtToken(
-//       decoded,
-//       config.jwt.JWT_SECRET,      config.jwt.JWT_REFRESH_EXPIRATION_DAYS,
-//     );
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    throw middlewareErrors.missingToken();
+  }
+
+  try {
+    // Verify and decode both tokens
+    const [decodedAccess, decodedRefresh] = await Promise.all([
+      verifyJwtToken(accessToken.trim(), config.jwt.JWT_SECRET),
+      verifyJwtToken(refreshToken.trim(), config.jwt.JWT_REFRESH_SECRET),
+    ]);
+
+    // Blacklist both tokens
+    await Promise.all([
+      decodedAccess.jti &&
+        blacklistToken(
+          decodedAccess.jti,
+          config.jwt.JWT_ACCESS_EXPIRATION_MINUTES * 60,
+        ),
+      decodedRefresh.jti &&
+        blacklistToken(
+          decodedRefresh.jti,
+          config.jwt.JWT_REFRESH_EXPIRATION_DAYS * 24 * 60 * 60,
+        ),
+      storeRefreshToken(decodedRefresh.id, ''), // Clear refresh token
+    ]);
+
+    return successMessages.logout().sendResponse(res);
+  } catch (error) {
+    // If tokens are invalid or expired, still clear the refresh token
+    if (error instanceof jwt.JsonWebTokenError) {
+      return successMessages.logout().sendResponse(res);
+    }
+    throw error;
+  }
+});
+
+export const refreshToken = tryCatchHandler(
+  async (req: Request, res: Response) => {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      throw middlewareErrors.missingToken();
+    }
+
+    // Step 1: Verify the refresh token
+    const decoded = await verifyJwtToken(
+      refreshToken,
+      config.jwt.JWT_REFRESH_SECRET,
+    );
+    // Step 2: Validate the stored refresh token
+    const isValid = await validateStoredRefreshToken(decoded.id, refreshToken);
+    if (!isValid) {
+      throw middlewareErrors.invalidToken();
+    }
+
+    // Step 3: Generate new tokens
+    const payload = {
+      id: decoded.id,
+      role: decoded.role,
+      email: decoded.email,
+    };
+
+    const [newAccessToken, newRefreshToken] = await Promise.all([
+      generateJwtToken(
+        payload,
+        config.jwt.JWT_SECRET,
+        config.jwt.JWT_ACCESS_EXPIRATION_MINUTES,
+      ),
+      generateJwtToken(
+        payload,
+        config.jwt.JWT_REFRESH_SECRET,
+        config.jwt.JWT_REFRESH_EXPIRATION_DAYS,
+      ),
+    ]);
+
+    // Step 4: Blacklist old refresh token
+    if (decoded.jti) {
+      await blacklistToken(
+        decoded.jti,
+        config.jwt.JWT_REFRESH_EXPIRATION_DAYS * 24 * 60 * 60,
+      );
+    }
+
+    // Step 5: Store new refresh token
+    await storeRefreshToken(decoded.id, newRefreshToken);
+
+    // Step 6: Send new tokens
+    return successMessages
+      .tokenRefreshed({
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+        expiresIn: config.jwt.JWT_ACCESS_EXPIRATION_MINUTES * 60,
+      })
+      .sendResponse(res);
+  },
+);
