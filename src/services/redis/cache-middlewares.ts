@@ -2,7 +2,7 @@ import { logger } from '@/logger/logger';
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { client } from './client';
-import { StoreType, StoreTypeEnum, SupportedTypeEnum } from '@/types';
+import { SupportedTypeEnum } from '@/types';
 
 /**
  * Generates a cache key from a request.
@@ -67,8 +67,6 @@ export const cacheMiddleware =
  */
 export const cacheInvalidate =
   (keys: string[]) => async (_: Request, res: Response, next: NextFunction) => {
-    const store: StoreTypeEnum = StoreType.CACHE;
-
     const originalEnd = res.end.bind(res);
     res.end = (chunkOrCb?: unknown, encodingOrCb?: unknown, cb?: unknown) => {
       if (
